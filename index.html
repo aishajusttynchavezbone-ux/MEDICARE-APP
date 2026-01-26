@@ -24,6 +24,21 @@
                     <div id="password-change-status" style="margin-top:10px;"></div>
                 </div>
             </div>
+            <p><a href="#" id="register-link">¿No tienes cuenta? Regístrate aquí</a></p>
+        </div>
+    </div>
+
+    <!-- Registro Padre -->
+    <div id="register" class="modal" style="display: none;">
+        <div class="modal-content">
+            <h2>Registro de Padre de Familia</h2>
+            <form id="register-form">
+                <label>Usuario: <input type="text" id="reg-username" required /></label>
+                <label>Contraseña: <input type="password" id="reg-password" required /></label>
+                <label>Confirmar Contraseña: <input type="password" id="reg-confirm-password" required /></label>
+                <button type="submit">Registrar Cuenta</button>
+            </form>
+            <div id="register-error" style="color:red; margin-top:10px;"></div>
         </div>
     </div>
 

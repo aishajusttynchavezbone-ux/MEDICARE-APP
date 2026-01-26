@@ -2,8 +2,8 @@ let currentUser = null;
 let currentUserIndex = null; // para padre: índice de estudiante que representa
 let selectedStudentIndex = null; // para enfermera: índice estudiante seleccionado
 
-// Datos padre demo (usuario, pass, índice estudiante)
-const padres = [
+// Datos padre demo (usuario, pass, índice estudiante) - ahora cargado desde localStorage
+let padres = JSON.parse(localStorage.getItem('padres')) || [
     { username: 'padre1', password: '123', studentIndex: 0 },
     { username: 'padre2', password: '234', studentIndex: 1 }
 ];
@@ -21,6 +21,52 @@ const legalAcceptCheckbox = document.getElementById('legal-accept');
 const acceptLegalBtn = document.getElementById('accept-legal');
 legalAcceptCheckbox.addEventListener('change', () => {
     acceptLegalBtn.disabled = !legalAcceptCheckbox.checked;
+});
+
+// Mostrar modal de registro
+document.getElementById('register-link').addEventListener('click', () => {
+    document.getElementById('login').style.display = 'none';
+    document.getElementById('register').style.display = 'flex';
+});
+
+// Formulario de registro
+document.getElementById('register-form').addEventListener('submit', e => {
+    e.preventDefault();
+    const username = document.getElementById('reg-username').value.trim();
+    const password = document.getElementById('reg-password').value;
+    const confirmPassword = document.getElementById('reg-confirm-password').value;
+    const errorDiv = document.getElementById('register-error');
+
+    // Validaciones básicas
+    if (password !== confirmPassword) {
+        errorDiv.textContent = 'Las contraseñas no coinciden.';
+        return;
+    }
+    if (password.length < 3) {
+        errorDiv.textContent = 'La contraseña debe tener al menos 3 caracteres.';
+        return;
+    }
+    if (padres.some(p => p.username === username)) {
+        errorDiv.textContent = 'El usuario ya existe.';
+        return;
+    }
+
+    // Crear estudiante vacío
+    const students = JSON.parse(localStorage.getItem('students')) || [];
+    const newStudentIndex = students.length;
+    students.push({}); // Perfil vacío
+    localStorage.setItem('students', JSON.stringify(students));
+
+    // Agregar padre
+    padres.push({ username, password, studentIndex: newStudentIndex });
+    localStorage.setItem('padres', JSON.stringify(padres));
+
+    errorDiv.style.color = 'green';
+    errorDiv.textContent = 'Cuenta registrada exitosamente. Ahora puedes iniciar sesión.';
+    setTimeout(() => {
+        document.getElementById('register').style.display = 'none';
+        document.getElementById('login').style.display = 'flex';
+    }, 2000);
 });
 
 // Login
@@ -87,18 +133,16 @@ function loadParentStudentProfile() {
     document.getElementById('allergies').value = student.allergies || '';
     document.getElementById('diseases').value = student.diseases || '';
     document.getElementById('medications').value = student.medications || '';
-
-    selectedStudentIndex = currentUserIndex;
 }
 
 // Guardar perfil padre
 document.getElementById('profile-form').addEventListener('submit', e => {
     e.preventDefault();
-    if (currentUser !== 'parent') return;
-
     const students = JSON.parse(localStorage.getItem('students')) || [];
-    if (currentUserIndex === null) return;
-
+    if (currentUserIndex === null || !students[currentUserIndex]) {
+        alert('Error: Estudiante no encontrado.');
+        return;
+    }
     students[currentUserIndex] = {
         fullName: document.getElementById('full-name').value,
         grade: document.getElementById('grade').value,
@@ -111,251 +155,177 @@ document.getElementById('profile-form').addEventListener('submit', e => {
         medications: document.getElementById('medications').value
     };
     localStorage.setItem('students', JSON.stringify(students));
-    alert('Perfil actualizado exitosamente.');
+    alert('Perfil guardado exitosamente.');
 });
 
-// Cargar selector para enfermera
+// Para enfermera: actualizar selector de estudiantes
 function updateStudentSelector() {
     const students = JSON.parse(localStorage.getItem('students')) || [];
     const selector = document.getElementById('student-selector');
     selector.innerHTML = '<option value="">Seleccionar Estudiante</option>';
-    students.forEach((student, idx) => {
-        const option = document.createElement('option');
-        option.value = idx;
-        option.textContent = student.fullName || `Estudiante ${idx + 1}`;
-        selector.appendChild(option);
+    students.forEach((student, index) => {
+        const name = student.fullName || `Estudiante ${index + 1}`;
+        selector.innerHTML += `<option value="${index}">${name}</option>`;
     });
 }
 
-// Enfermera selecciona estudiante
-document.getElementById('student-selector').addEventListener('change', e => {
-    selectedStudentIndex = e.target.value;
-    if (selectedStudentIndex === '') {
-        document.getElementById('profile-form').style.display = 'none';
+// Cambiar estudiante seleccionado por enfermera
+document.getElementById('student-selector').addEventListener('change', () => {
+    selectedStudentIndex = parseInt(document.getElementById('student-selector').value);
+    if (selectedStudentIndex !== null && !isNaN(selectedStudentIndex)) {
+        loadNurseStudentProfile();
+    } else {
         document.getElementById('selected-student-info').innerHTML = '';
-        return;
+        document.getElementById('profile-form').style.display = 'none';
     }
-    const students = JSON.parse(localStorage.getItem('students')) || [];
-    const student = students[selectedStudentIndex];
-    if (!student) return;
-
-    // Mostrar perfil ENFERMERA solo vista (oculta form editable)
-    document.getElementById('profile-form').style.display = 'none';
-
-    document.getElementById('selected-student-info').innerHTML = `
-        <p><strong>Nombre:</strong> ${student.fullName}</p>
-        <p><strong>Curso:</strong> ${student.grade}</p>
-        <p><strong>Identificación:</strong> ${student.identification}</p>
-        <p><strong>Representante:</strong> ${student.legalRepName}</p>
-        <p><strong>Teléfono Representante:</strong> ${student.repPhone} <a href="tel:${student.repPhone}"><button class="call-btn">Llamar</button></a></p>
-        <p><strong>Número Auxiliar:</strong> ${student.auxPhone} <a href="tel:${student.auxPhone}"><button class="call-btn">Llamar</button></a></p>
-        <p><strong>Números Emergencia:</strong><br>
-           Bomberos: 04-276-2342 / 04-276-0095 <a href="tel:042762342"><button class="call-btn">Llamar</button></a><br>
-           Hospital: 0985568992 <a href="tel:0985568992"><button class="call-btn">Llamar</button></a>
-        </p>
-        <p><strong>Alergias:</strong> ${student.allergies}</p>
-        <p><strong>Enfermedades:</strong> ${student.diseases}</p>
-        <p><strong>Medicamentos:</strong> ${student.medications}</p>
-    `;
-
-    // Muestra e inicializa otras secciones dependientes del estudiante
-    updateVisitHistory();
-    updateAlerts();
 });
 
-// Guardar signos vitales (solo enfermera)
+// Cargar perfil para enfermera (solo vista)
+function loadNurseStudentProfile() {
+    const students = JSON.parse(localStorage.getItem('students')) || [];
+    if (selectedStudentIndex === null || !students[selectedStudentIndex]) {
+        document.getElementById('selected-student-info').innerHTML = '<p>Estudiante no encontrado.</p>';
+        return;
+    }
+    const student = students[selectedStudentIndex];
+    document.getElementById('selected-student-info').innerHTML = `
+        <h3>Información del Estudiante</h3>
+        <p><strong>Nombre Completo:</strong> ${student.fullName || 'No registrado'}</p>
+        <p><strong>Curso/Grado:</strong> ${student.grade || 'No registrado'}</p>
+        <p><strong>Identificación:</strong> ${student.identification || 'No registrado'}</p>
+        <p><strong>Representante Legal:</strong> ${student.legalRepName || 'No registrado'}</p>
+        <p><strong>Teléfono Representante:</strong> ${student.repPhone || 'No registrado'}</p>
+        <p><strong>Teléfono Auxiliar:</strong> ${student.auxPhone || 'No registrado'}</p>
+        <p><strong>Alergias:</strong> ${student.allergies || 'Ninguna'}</p>
+        <p><strong>Enfermedades:</strong> ${student.diseases || 'Ninguna'}</p>
+        <p><strong>Medicamentos:</strong> ${student.medications || 'Ninguno'}</p>
+    `;
+    document.getElementById('profile-form').style.display = 'none';
+}
+
+// Guardar signos vitales (enfermera)
 document.getElementById('vitals-form').addEventListener('submit', e => {
     e.preventDefault();
-    if (currentUser !== 'nurse' || selectedStudentIndex === null) return;
-    const vitals = {
+    if (selectedStudentIndex === null) {
+        alert('Selecciona un estudiante primero.');
+        return;
+    }
+    const vitals = JSON.parse(localStorage.getItem('vitals')) || [];
+    vitals.push({
+        studentIndex: selectedStudentIndex,
         pulse: document.getElementById('pulse').value,
         bloodPressure: document.getElementById('blood-pressure').value,
         temperature: document.getElementById('temperature').value,
         respiratoryRate: document.getElementById('respiratory-rate').value,
         symptoms: document.getElementById('symptoms').value,
         procedure: document.getElementById('procedure').value,
-        date: new Date().toLocaleString(),
-        type: 'vitals',
-        studentIndex: selectedStudentIndex
-    };
-    const history = JSON.parse(localStorage.getItem('visitHistory')) || [];
-    history.push(vitals);
-    localStorage.setItem('visitHistory', JSON.stringify(history));
-    updateVisitHistory();
-    alert('Datos guardados exitosamente.');
-    e.target.reset();
+        date: new Date().toISOString()
+    });
+    localStorage.setItem('vitals', JSON.stringify(vitals));
+    alert('Datos guardados.');
+    // Limpiar form
+    document.getElementById('vitals-form').reset();
 });
 
-// Mensajería interna (solo enfermera)
+// Mensajería (enfermera)
 document.getElementById('report-withdrawal').addEventListener('click', () => {
-    if (currentUser !== 'nurse' || selectedStudentIndex === null) return;
-    const message = document.getElementById('withdrawal-message').value;
-    if (message.trim() === '') {
-        alert('Por favor, escriba el motivo del retiro.');
+    const message = document.getElementById('withdrawal-message').value.trim();
+    if (!message) {
+        alert('Escribe un motivo.');
+        return;
+    }
+    if (selectedStudentIndex === null) {
+        alert('Selecciona un estudiante.');
         return;
     }
     const alerts = JSON.parse(localStorage.getItem('alerts')) || [];
     alerts.push({
-        message: message,
-        date: new Date().toLocaleString(),
-        studentIndex: selectedStudentIndex
+        studentIndex: selectedStudentIndex,
+        message,
+        date: new Date().toISOString()
     });
     localStorage.setItem('alerts', JSON.stringify(alerts));
-    document.getElementById('message-status').innerText = `Mensaje enviado al representante: "${message}". El estudiante debe ser retirado.`;
+    document.getElementById('message-status').textContent = 'Mensaje enviado y retiro reportado.';
     document.getElementById('withdrawal-message').value = '';
-    updateAlerts();
 });
 
-// Registrar ingreso/egreso (solo enfermera)
+// Ingreso/Egreso (enfermera)
 document.getElementById('entry-exit-form').addEventListener('submit', e => {
     e.preventDefault();
-    if (currentUser !== 'nurse' || selectedStudentIndex === null) return;
-    const entryExit = {
-        entryDateTime: document.getElementById('entry-datetime').value,
-        exitDateTime: document.getElementById('exit-datetime').value,
+    if (selectedStudentIndex === null) {
+        alert('Selecciona un estudiante.');
+        return;
+    }
+    const visits = JSON.parse(localStorage.getItem('visits')) || [];
+    visits.push({
+        studentIndex: selectedStudentIndex,
+        entry: document.getElementById('entry-datetime').value,
+        exit: document.getElementById('exit-datetime').value,
         withdrawnBy: document.getElementById('withdrawn-by').value,
-        date: new Date().toLocaleString(),
-        type: 'entry-exit',
-        studentIndex: selectedStudentIndex
-    };
-    const history = JSON.parse(localStorage.getItem('visitHistory')) || [];
-    history.push(entryExit);
-    localStorage.setItem('visitHistory', JSON.stringify(history));
+        date: new Date().toISOString()
+    });
+    localStorage.setItem('visits', JSON.stringify(visits));
+    document.getElementById('exit-status').textContent = 'Registro guardado.';
     updateVisitHistory();
-    document.getElementById('exit-status').innerText = 'Ingreso/Egreso registrado exitosamente.';
-    e.target.reset();
+    document.getElementById('entry-exit-form').reset();
 });
 
-// Actualizar historial de visitas enfermera (filtrado por estudiante)
+// Actualizar historial de visitas (enfermera)
 function updateVisitHistory() {
-    if (currentUser !== 'nurse' || selectedStudentIndex === null) return;
-    const history = JSON.parse(localStorage.getItem('visitHistory')) || [];
+    const visits = JSON.parse(localStorage.getItem('visits')) || [];
     const list = document.getElementById('visit-history');
     list.innerHTML = '';
-    history.filter(h => h.studentIndex == selectedStudentIndex).forEach(visit => {
-        const li = document.createElement('li');
-        if (visit.type === 'vitals') {
-            li.textContent = `${visit.date} - Pulso: ${visit.pulse} bpm, Presión: ${visit.bloodPressure}, Temp: ${visit.temperature}°C, Resp: ${visit.respiratoryRate} rpm. Síntomas: ${visit.symptoms}. Procedimiento: ${visit.procedure}`;
-        } else if (visit.type === 'entry-exit') {
-            li.textContent = `${visit.date} - Ingreso: ${visit.entryDateTime}, Egreso: ${visit.exitDateTime}, Retirado por: ${visit.withdrawnBy}`;
-        }
-        list.appendChild(li);
+    visits.filter(v => v.studentIndex === selectedStudentIndex).forEach(v => {
+        list.innerHTML += `<li>Ingreso: ${v.entry}, Egreso: ${v.exit}, Retirado por: ${v.withdrawnBy}</li>`;
     });
 }
 
-// Actualizar alertas para padre o enfermera (filtrado por estudiante)
-function updateAlerts() {
-    const alertsCont = document.getElementById('alerts-list');
-    alertsCont.innerHTML = '';
+// Alertas padre
+function loadAlerts() {
     const alerts = JSON.parse(localStorage.getItem('alerts')) || [];
-
-    let studentIdx = null;
-    if (currentUser === 'parent') studentIdx = currentUserIndex;
-    else if (currentUser === 'nurse') studentIdx = selectedStudentIndex;
-
-    if (studentIdx === null) return;
-
-    const filteredAlerts = alerts.filter(a => a.studentIndex == studentIdx);
-    filteredAlerts.forEach(alert => {
-        const div = document.createElement('div');
-        div.style.background = '#fdd';
-        div.style.margin = '5px 0';
-        div.style.padding = '8px';
-        div.style.border = '1px solid #f99';
-        div.textContent = `${alert.date}: ${alert.message}`;
-        alertsCont.appendChild(div);
+    const list = document.getElementById('alerts-list');
+    list.innerHTML = '';
+    alerts.filter(a => a.studentIndex === currentUserIndex).forEach(a => {
+        list.innerHTML += `<p>${a.message} (Fecha: ${new Date(a.date).toLocaleString()})</p>`;
     });
 }
 
-// Actualizar historial padre (básico y sólo su estudiante)
-function updateParentHistory() {
-    if (currentUser !== 'parent') return;
-    const history = JSON.parse(localStorage.getItem('visitHistory')) || [];
+// Historial padre
+function loadHistory() {
+    const visits = JSON.parse(localStorage.getItem('visits')) || [];
     const list = document.getElementById('parent-history');
     list.innerHTML = '';
-    history.filter(h => h.studentIndex == currentUserIndex).forEach(visit => {
-        const li = document.createElement('li');
-        if (visit.type === 'vitals') {
-            li.textContent = `${visit.date} - Síntomas: ${visit.symptoms}. Procedimiento: ${visit.procedure}`;
-        } else if (visit.type === 'entry-exit') {
-            li.textContent = `${visit.date} - Ingreso: ${visit.entryDateTime}, Egreso: ${visit.exitDateTime}, Retirado por: ${visit.withdrawnBy}`;
-        }
-        list.appendChild(li);
+    visits.filter(v => v.studentIndex === currentUserIndex).forEach(v => {
+        list.innerHTML += `<li>Ingreso: ${v.entry}, Egreso: ${v.exit}, Retirado por: ${v.withdrawnBy}</li>`;
     });
 }
 
-// Olvidaste contraseña (solo Padre)
-const forgotPasswordContainer = document.getElementById('forgot-password-container');
-const forgotPasswordLink = document.getElementById('forgot-password-link');
-const forgotPasswordForm = document.getElementById('forgot-password-form');
-const changePasswordBtn = document.getElementById('change-password-btn');
-const passwordChangeStatus = document.getElementById('password-change-status');
-
-forgotPasswordLink.addEventListener('click', e => {
-    e.preventDefault();
-    forgotPasswordForm.style.display =
-        forgotPasswordForm.style.display === 'none' ? 'block' : 'none';
+// Cambiar contraseña padre
+document.getElementById('forgot-password-link').addEventListener('click', () => {
+    document.getElementById('forgot-password-form').style.display = 'block';
 });
 
-changePasswordBtn.addEventListener('click', () => {
-    const newPass = document.getElementById('new-password').value.trim();
+document.getElementById('change-password-btn').addEventListener('click', () => {
+    const newPass = document.getElementById('new-password').value;
     if (newPass.length < 3) {
-        passwordChangeStatus.textContent = 'La contraseña debe tener al menos 3 caracteres.';
-        passwordChangeStatus.style.color = 'red';
+        document.getElementById('password-change-status').textContent = 'Contraseña demasiado corta.';
         return;
     }
-    if (currentUser !== 'parent') {
-        passwordChangeStatus.textContent = 'Solo el padre puede cambiar su contraseña.';
-        passwordChangeStatus.style.color = 'red';
-        return;
-    }
-    const username = document.getElementById('username').value.trim();
-    const padre = padres.find(p => p.username === username);
+    const padre = padres.find(p => p.username === document.getElementById('username').value);
     if (padre) {
         padre.password = newPass;
-        passwordChangeStatus.textContent = 'Contraseña actualizada correctamente.';
-        passwordChangeStatus.style.color = 'green';
-        document.getElementById('new-password').value = '';
-    } else {
-        passwordChangeStatus.textContent = 'Error al actualizar contraseña.';
-        passwordChangeStatus.style.color = 'red';
+        localStorage.setItem('padres', JSON.stringify(padres));
+        document.getElementById('password-change-status').textContent = 'Contraseña cambiada.';
     }
 });
 
-// Inicialización varias
-function init() {
-    // Ocultar todo app y mostrar sólo login al inicio
+// Inicializar
+document.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('register').style.display = 'none';
+    document.getElementById('legal-framework').style.display = 'none';
     document.getElementById('app').style.display = 'none';
     document.getElementById('nav-parent').style.display = 'none';
     document.getElementById('nav-nurse').style.display = 'none';
-    document.getElementById('legal-framework').style.display = 'none';
-    document.getElementById('profile').style.display = 'none';
-    document.getElementById('vitals').style.display = 'none';
-    document.getElementById('messaging').style.display = 'none';
-    document.getElementById('entry-exit').style.display = 'none';
-    document.getElementById('alerts').style.display = 'none';
-    document.getElementById('history').style.display = 'none';
-    document.getElementById('profile-form').style.display = 'none';
-    document.getElementById('selected-student-info').innerHTML = '';
-
-    // Eventos de navegación padre
-    document.querySelectorAll('#nav-parent button').forEach(btn => {
-        btn.addEventListener('click', () => {
-            const id = btn.getAttribute('onclick').match(/'(.*?)'/)[1];
-            showSection(id);
-            if (id === 'profile') loadParentStudentProfile();
-            if (id === 'alerts') updateAlerts();
-            if (id === 'history') updateParentHistory();
-        });
-    });
-
-    // Eventos navegación nurse
-    document.querySelectorAll('#nav-nurse button').forEach(btn => {
-        btn.addEventListener('click', () => {
-            const id = btn.getAttribute('onclick').match(/'(.*?)'/)[1];
-            showSection(id);
-        });
-    });
-}
-
-init();
+    document.getElementById('nurse-student-selector').style.display = 'none';
+    document.getElementById('forgot-password-form').style.display = 'none';
+});

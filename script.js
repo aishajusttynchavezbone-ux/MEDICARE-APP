@@ -180,7 +180,7 @@ document.getElementById('student-selector').addEventListener('change', () => {
     }
 });
 
-// Cargar perfil para enfermera (solo vista)
+// Cargar perfil para enfermera (solo vista) - CON BOTONES DE LLAMADA
 function loadNurseStudentProfile() {
     const students = JSON.parse(localStorage.getItem('students')) || [];
     if (selectedStudentIndex === null || !students[selectedStudentIndex]) {
@@ -194,8 +194,15 @@ function loadNurseStudentProfile() {
         <p><strong>Curso/Grado:</strong> ${student.grade || 'No registrado'}</p>
         <p><strong>Identificación:</strong> ${student.identification || 'No registrado'}</p>
         <p><strong>Representante Legal:</strong> ${student.legalRepName || 'No registrado'}</p>
-        <p><strong>Teléfono Representante:</strong> ${student.repPhone || 'No registrado'}</p>
-        <p><strong>Teléfono Auxiliar:</strong> ${student.auxPhone || 'No registrado'}</p>
+        <p><strong>Teléfono Representante:</strong> ${student.repPhone || 'No registrado'} 
+            ${student.repPhone ? `<a href="tel:${student.repPhone}"><button class="call-btn">Llamar Representante</button></a>` : ''}</p>
+        <p><strong>Teléfono Auxiliar:</strong> ${student.auxPhone || 'No registrado'} 
+            ${student.auxPhone ? `<a href="tel:${student.auxPhone}"><button class="call-btn">Llamar Auxiliar</button></a>` : ''}</p>
+        <p><strong>Números de Emergencia (Cantón General Villamil Playas):</strong></p>
+        <ul style="list-style:none; padding-left:0;">
+            <li>04-276-2342 / 04-276-0095 (Bomberos) <a href="tel:042762342"><button class="call-btn">Llamar Bomberos</button></a></li>
+            <li>0985568992 (Hospital) <a href="tel:0985568992"><button class="call-btn">Llamar Hospital</button></a></li>
+        </ul>
         <p><strong>Alergias:</strong> ${student.allergies || 'Ninguna'}</p>
         <p><strong>Enfermedades:</strong> ${student.diseases || 'Ninguna'}</p>
         <p><strong>Medicamentos:</strong> ${student.medications || 'Ninguno'}</p>

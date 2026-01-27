@@ -14,6 +14,12 @@ function showSection(id) {
     secs.forEach(s => s.style.display = 'none');
     const el = document.getElementById(id);
     if (el) el.style.display = 'block';
+    // Cargar datos específicos al mostrar sección
+    if (currentUser === 'parent') {
+        if (id === 'alerts') loadAlerts();
+        if (id === 'history') loadHistory();
+    }
+    if (currentUser === 'nurse' && id === 'entry-exit') updateVisitHistory();
 }
 
 // Para controlar el botón aceptar en marco legal
@@ -42,8 +48,8 @@ document.getElementById('register-form').addEventListener('submit', e => {
         errorDiv.textContent = 'Las contraseñas no coinciden.';
         return;
     }
-    if (password.length < 3) {
-        errorDiv.textContent = 'La contraseña debe tener al menos 3 caracteres.';
+    if (password.length < 8) {
+        errorDiv.textContent = 'La contraseña debe tener al menos 8 caracteres.';
         return;
     }
     if (padres.some(p => p.username === username)) {
@@ -174,6 +180,7 @@ document.getElementById('student-selector').addEventListener('change', () => {
     selectedStudentIndex = parseInt(document.getElementById('student-selector').value);
     if (selectedStudentIndex !== null && !isNaN(selectedStudentIndex)) {
         loadNurseStudentProfile();
+        updateVisitHistory(); // Cargar historial al seleccionar estudiante
     } else {
         document.getElementById('selected-student-info').innerHTML = '';
         document.getElementById('profile-form').style.display = 'none';

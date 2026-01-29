@@ -197,7 +197,29 @@
             <ul id="parent-history"></ul>
         </section>
     </div>
+<script type="module">
+  // Import the functions you need from the SDKs you need
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-app.js";
+  import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-analytics.js";
+  // TODO: Add SDKs for Firebase products that you want to use
+  // https://firebase.google.com/docs/web/setup#available-libraries
 
+  // Your web app's Firebase configuration
+  // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+  const firebaseConfig = {
+    apiKey: "AIzaSyCRpqTejwgutfluXuvYjwHAxDQNDLTyyK4",
+    authDomain: "medicareapp-8a81c.firebaseapp.com",
+    projectId: "medicareapp-8a81c",
+    storageBucket: "medicareapp-8a81c.firebasestorage.app",
+    messagingSenderId: "2084488890",
+    appId: "1:2084488890:web:80c1bb25450beb83bda483",
+    measurementId: "G-2EGRLZETGL"
+  };
+
+  // Initialize Firebase
+  const app = initializeApp(firebaseConfig);
+  const analytics = getAnalytics(app);
+</script>
     <script src="script.js"></script>
 </body>
 </html>

@@ -1,0 +1,203 @@
+<html >
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>MediCare - Gestión de Enfermería Escolar</title>
+    <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+    <!-- Login -->
+    <div id="login" class="modal">
+        <div class="modal-content">
+            <h2>Iniciar Sesión</h2>
+            <form id="login-form">
+                <label>Usuario: <input type="text" id="username" required /></label>
+                <label>Contraseña: <input type="password" id="password" required /></label>
+                <button type="submit">Iniciar Sesión</button>
+            </form>
+            <div id="login-error" style="color:red; margin-top:10px;"></div>
+            <div id="forgot-password-container" style="display:none; margin-top:15px;">
+                <a href="#" id="forgot-password-link">¿Olvidaste tu contraseña?</a>
+                <div id="forgot-password-form" style="display:none; margin-top:10px;">
+                    <input type="password" id="new-password" placeholder="Nueva contraseña" />
+                    <button id="change-password-btn">Cambiar contraseña</button>
+                    <div id="password-change-status" style="margin-top:10px;"></div>
+                </div>
+            </div>
+            <p><a href="#" id="register-link">¿No tienes cuenta? Regístrate aquí</a></p>
+        </div>
+    </div>
+
+    <!-- Registro Padre -->
+    <div id="register" class="modal" style="display: none;">
+        <div class="modal-content">
+            <h2>Registro de Padre de Familia</h2>
+            <form id="register-form">
+                <label>Usuario: <input type="text" id="reg-username" required /></label>
+                <label>Contraseña: <input type="password" id="reg-password" required /></label>
+                <label>Confirmar Contraseña: <input type="password" id="reg-confirm-password" required /></label>
+                <button type="submit">Registrar Cuenta</button>
+            </form>
+            <div id="register-error" style="color:red; margin-top:10px;"></div>
+        </div>
+    </div>
+
+    <!-- Marco Legal SOLO Padre -->
+    <div id="legal-framework" class="modal" style="display: none;">
+        <div class="modal-content legal-modal-content">
+            <h2>📄 MARCO LEGAL Y CONFIDENCIALIDAD</h2>
+            <p>
+                MediCare es una aplicación institucional para el área de enfermería escolar, destinada al registro, gestión y seguimiento de información médica básica de los estudiantes.
+            </p>
+            <p>
+                El tratamiento de datos personales y médicos se rige por la Ley Orgánica de Protección de Datos Personales del Ecuador, garantizando confidencialidad, integridad y uso responsable de la información.
+            </p>
+            <p>
+                Los datos serán utilizados únicamente para atención médica, emergencias escolares y comunicación con los representantes legales.
+            </p>
+            <p>
+                El acceso no autorizado, divulgación o uso indebido de la información constituye una falta grave con posibles responsabilidades legales.
+            </p>
+            <label style="display:flex;align-items:center;gap:0.5em;">
+                <input type="checkbox" id="legal-accept" /> He leído y acepto los términos y condiciones
+            </label>
+            <button id="accept-legal" disabled>INGRESAR</button>
+        </div>
+    </div>
+
+    <!-- Aplicación -->
+    <div id="app" style="display: none; max-width: 900px; margin: 0 auto; padding: 20px;">
+        <header style="text-align:center;">
+            <h1>MediCare - Gestión de Enfermería Escolar</h1>
+            <p id="user-role"></p>
+        </header>
+
+        <!-- Navegación padre -->
+        <nav id="nav-parent" style="display: none; margin-bottom: 20px;">
+            <button onclick="showSection('profile')">Perfil de Estudiante</button>
+            <button onclick="showSection('alerts')">Alertas de Retiro</button>
+            <button onclick="showSection('history')">Historial de Visitas</button>
+        </nav>
+
+        <!-- Navegación enfermera -->
+        <nav id="nav-nurse" style="display: none; margin-bottom: 20px;">
+            <button onclick="showSection('profile')">Perfil de Estudiante</button>
+            <button onclick="showSection('vitals')">Signos Vitales y Síntomas</button>
+            <button onclick="showSection('messaging')">Mensajería Interna</button>
+            <button onclick="showSection('entry-exit')">Ingreso/Egreso y Historial</button>
+        </nav>
+
+        <!-- SECCIONES -->
+
+        <!-- Perfil -->
+        <section id="profile" class="section" style="display:none;">
+            <h2>Perfil Básico de Enfermería</h2>
+
+            <!-- Selección solo para Enfermería -->
+            <div id="nurse-student-selector" style="margin-bottom:15px; display:none;">
+                <label>Seleccionar Estudiante:
+                    <select id="student-selector"></select>
+                </label>
+            </div>
+
+            <form id="profile-form" style="display:none;">
+                <label>Nombre Completo: <input type="text" id="full-name" required></label>
+                <label>Curso/Grado:
+                    <select id="grade" required>
+                        <option value="">Seleccionar</option>
+                        <option value="Inicial">Inicial</option>
+                        <option value="1ro Básica">1ro de Básica</option>
+                        <option value="2do Básica">2do de Básica</option>
+                        <option value="3ro Básica">3ro de Básica</option>
+                        <option value="4to Básica">4to de Básica</option>
+                        <option value="5to Básica">5to de Básica</option>
+                        <option value="6to Básica">6to de Básica</option>
+                        <option value="7mo Básica">7mo de Básica</option>
+                        <option value="8vo Secundaria">8vo de Secundaria</option>
+                        <option value="9no Secundaria">9no de Secundaria</option>
+                        <option value="10mo Secundaria">10mo de Secundaria</option>
+                        <option value="1ro Bachillerato Ciencias">1ro Bachillerato Ciencias</option>
+                        <option value="2do Bachillerato Ciencias">2do Bachillerato Ciencias</option>
+                        <option value="3ro Bachillerato Ciencias">3ro Bachillerato Ciencias</option>
+                        <option value="1ro Bachillerato Contabilidad">1ro Bachillerato Contabilidad</option>
+                        <option value="2do Bachillerato Contabilidad">2do Bachillerato Contabilidad</option>
+                        <option value="3ro Bachillerato Contabilidad">3ro Bachillerato Contabilidad</option>
+                        <option value="1ro Bachillerato Informática">1ro Bachillerato Informática</option>
+                        <option value="2do Bachillerato Informática">2do Bachillerato Informática</option>
+                        <option value="3ro Bachillerato Informática">3ro Bachillerato Informática</option>
+                    </select>
+                </label>
+                <label>Identificación: <input type="text" id="identification" required></label>
+                <label>Nombre del Representante Legal: <input type="text" id="legal-rep-name" required></label>
+                <label>Número Telefónico del Representante: <input type="tel" id="rep-phone" required></label>
+                <label>Número Auxiliar: <input type="tel" id="aux-phone"></label>
+                <label>Números de Emergencia (Cantón General Villamil Playas):
+                    <ul style="list-style:none; padding-left:0;">
+                        <li>04-276-2342 / 04-276-0095 (Bomberos) <a href="tel:042762342"><button class="call-btn">Llamar Bomberos</button></a></li>
+                        <li>0985568992 (Hospital) <a href="tel:0985568992"><button class="call-btn">Llamar Hospital</button></a></li>
+                    </ul>
+                </label>
+                <label>Alergias: <textarea id="allergies"></textarea></label>
+                <label>Enfermedades: <textarea id="diseases"></textarea></label>
+                <label>Medicamentos Actuales: <textarea id="medications"></textarea></label>
+
+                <button type="submit">Guardar Perfil</button>
+            </form>
+
+            <!-- Para enfermera: vista de datos no ed. de perfil -->
+            <div id="selected-student-info"></div>
+        </section>
+
+        <!-- Signos Vitales -->
+        <section id="vitals" class="section" style="display:none;">
+            <h2>Signos Vitales, Síntomas y Procedimiento</h2>
+            <form id="vitals-form">
+                <label>Pulso (bpm): <input type="number" id="pulse" required></label>
+                <label>Presión Arterial: <input type="text" id="blood-pressure" required></label>
+                <label>Temperatura (°C): <input type="number" step="0.1" id="temperature" required></label>
+                <label>Frecuencia Respiratoria (rpm): <input type="number" id="respiratory-rate" required></label>
+                <label>Síntomas: <textarea id="symptoms" required></textarea></label>
+                <label>Procedimiento: <textarea id="procedure" required></textarea></label>
+                <button type="submit">Guardar Datos</button>
+            </form>
+        </section>
+
+        <!-- Mensajería -->
+        <section id="messaging" class="section" style="display:none;">
+            <h2>Mensajería Interna</h2>
+            <p>Redacte el motivo por el cual el estudiante debe ser retirado.</p>
+            <textarea id="withdrawal-message" placeholder="Escriba el motivo aquí..." required></textarea>
+            <button id="report-withdrawal">Enviar Mensaje y Reportar Retiro</button>
+            <div id="message-status"></div>
+        </section>
+
+        <!-- Ingreso / Egreso e Historial -->
+        <section id="entry-exit" class="section" style="display:none;">
+            <h2>Ingreso/Egreso y Historial de Visitas</h2>
+            <form id="entry-exit-form">
+                <label>Fecha y Hora de Ingreso: <input type="datetime-local" id="entry-datetime" required></label>
+                <label>Fecha y Hora de Egreso: <input type="datetime-local" id="exit-datetime" required></label>
+                <label>Retirado por: <input type="text" id="withdrawn-by" placeholder="Nombre de la persona que retira" required></label>
+                <button type="submit">Registrar Ingreso/Egreso</button>
+            </form>
+            <div id="exit-status"></div>
+            <h3>Historial de Visitas</h3>
+            <ul id="visit-history"></ul>
+        </section>
+
+        <!-- Alertas Padre -->
+        <section id="alerts" class="section" style="display:none;">
+            <h2>Alertas de Retiro</h2>
+            <div id="alerts-list"></div>
+        </section>
+
+        <!-- Historial Padre -->
+        <section id="history" class="section" style="display:none;">
+            <h2>Historial de Visitas</h2>
+            <ul id="parent-history"></ul>
+        </section>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
